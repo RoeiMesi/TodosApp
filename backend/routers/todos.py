@@ -1,64 +1,87 @@
+from datetime import datetime, timezone
 from typing import Optional
-from fastapi import APIRouter, HTTPException, Path, Query
+from fastapi import APIRouter, HTTPException, Path, Query, Depends
 from pydantic import BaseModel, Field
 from starlette import status
+from utils.dynamodb import get_todos_table
+from boto3.dynamodb.conditions import Key
 
-router = APIRouter()
+router = APIRouter(
+    prefix='/todos',
+    tags=['todos']
+)
 
 class Todo:
-    id: int
+    username: str #Partition key
     title: str
     description: str
     priority: int
     completed: bool
+    created_at: str #Sort key
 
-    def __init__(self, id, title, description, priority, completed):
-        self.id = id
+    def __init__(self, username, title, description, priority, completed):
+        self.username = username
         self.title = title
         self.description = description
         self.priority = priority
         self.completed = completed
+        self.created_at = datetime.now(timezone.utc).isoformat()
 
-class TodoRequest(BaseModel):
-    id: Optional[int] = Field(description="ID is not needed on create", default=None)
+class CreateTodoRequest(BaseModel):
+    username: str = Field(description="Username of creator of the todo", default=None)
     title: str = Field(min_length=1, max_length=50)
     description: str = Field(min_length=1)
     priority: int = Field(ge=1, le=3)
     completed: bool = Field(default=False)
 
+class UpdateTodoRequest(BaseModel):
+    username: str
+    created_at: str
+    title: Optional[str] = None
+    description: Optional[str] = None
+    priority: Optional[int] = None
+    completed: Optional[bool] = None
 
-TODOS = [
-    Todo(1, "FirstTodo", "FirstTodoDesc", 3, True),
-    Todo(2, "SecondTodo", "SecondDesc", 2, False)
-]
 
-@router.get("/")
-async def read_all_todos():
-    return TODOS
-
-@router.get("/{todo_id}", status_code=status.HTTP_200_OK)
-async def read_todo(todo_id: int):
-    for todo in TODOS:
-        if todo.id == todo_id:
-            return todo
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Todo ID not found')
+@router.get("/{username}", status_code=status.HTTP_200_OK)
+async def read_todos(username: str, table=Depends(get_todos_table)):
+    filtering_exp = Key('username').eq(username)
+    response = table.query(
+        KeyConditionExpression=filtering_exp)
+    if not response["Items"]:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='No todos found')
+    return response["Items"]
 
 @router.post("/create-todo", status_code=status.HTTP_201_CREATED)
-async def create_todo(todo_request: TodoRequest):
-    new_todo = Todo(**todo_request.model_dump())
-    TODOS.append(find_todo_id(new_todo))
+async def create_todo(todo_request: CreateTodoRequest, table=Depends(get_todos_table)):
+    todo_request_model = todo_request.model_dump()
+    todo_request_model['created_at'] = datetime.now(timezone.utc).isoformat()
+    response = table.put_item(Item = todo_request_model)
+    print("Todo created successfully")
 
-def find_todo_id(todo):
-    todo.id = 1 if len(TODOS) == 0 else len(TODOS) + 1
-    return todo
 
-@router.put("/todos/update-todo", status_code=status.HTTP_204_NO_CONTENT)
-async def update_todo(todo_request: TodoRequest):
-    todo_changed = False
-    for i in range(len(TODOS)):
-        if TODOS[i].id == todo_request.id:
-            TODOS[i] = todo_request
-            todo_changed = True
-    if todo_changed == False:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Todo ID not found.')
+@router.put("/update-todo", status_code=status.HTTP_200_OK)
+async def update_todo(todo_request: UpdateTodoRequest, table=Depends(get_todos_table)):
+    title_val = "" if todo_request.title is None else todo_request.title
+    description_val = "" if todo_request.description is None else todo_request.description
+    priority_val = 0 if todo_request.priority is None else todo_request.priority
+
+    response = table.update_item(
+        Key={
+            "username": todo_request.username,
+            "created_at": todo_request.created_at
+            },
+        UpdateExpression="SET title = :title, description = :desc, priority = :priority",
+        ExpressionAttributeValues={
+            ":title": title_val,
+            ":desc": description_val,
+            ":priority": priority_val,
+        },
+        ReturnValues="ALL_NEW",
+    )
+
+    if "Attributes" not in response:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found")
+
+    return response["Attributes"]
     
