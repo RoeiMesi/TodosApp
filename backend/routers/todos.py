@@ -56,7 +56,7 @@ async def read_all_todos(username: str, table=Depends(get_todos_table)):
 async def create_todo(todo_request: CreateTodoRequest, table=Depends(get_todos_table)):
     try:
         response = todoController.create_todo(todo_request, table)
-        return {'message': 'success'}
+        return response
     except todoController.FailedTodoCreation:
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail='Failed to create todo.')
     
@@ -71,4 +71,7 @@ async def update_todo(todo_request: UpdateTodoRequest, table=Depends(get_todos_t
     
 @router.delete("/{username}/{created_at}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_todo(username: str, created_at: str, table=Depends(get_todos_table)):
-    todoController.delete_todo(username, created_at, table)
+    try:
+        todoController.delete_todo(username, created_at, table)
+    except todoController.FailedDelete:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
