@@ -52,7 +52,7 @@ async def read_todos(username: str, table=Depends(get_todos_table)):
     filtering_exp = Key('username').eq(username)
     response = table.query(
         KeyConditionExpression=filtering_exp)
-    return response["Items", []]
+    return response.get("Items", [])
 
 @router.post("/create-todo", status_code=status.HTTP_201_CREATED)
 async def create_todo(todo_request: CreateTodoRequest, table=Depends(get_todos_table)):
@@ -87,7 +87,7 @@ async def update_todo(todo_request: UpdateTodoRequest, table=Depends(get_todos_t
             "created_at": todo_request.created_at
             },
         UpdateExpression=update_expression,
-        ExpressionAttributeValues=expression_attr_names,
+        ExpressionAttributeNames=expression_attr_names,
         ExpressionAttributeValues=expression_attr_vals,
         ConditionExpression="attribute_exists(username) AND attribute_exists(created_at)",
         ReturnValues="ALL_NEW",
@@ -98,5 +98,5 @@ async def update_todo(todo_request: UpdateTodoRequest, table=Depends(get_todos_t
 async def delete_todo(username: str, created_at: str, table=Depends(get_todos_table)):
     table.delete_item(
         Key={"username": username, "created_at": created_at},
-        ConditionExpression="attribute_exists(username) AND attribute exists(created_at)"
+        ConditionExpression="attribute_exists(username) AND attribute_exists(created_at)"
     )
