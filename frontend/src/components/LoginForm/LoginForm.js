@@ -5,8 +5,18 @@ export default function LoginForm() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  const clearForm = () => {
+    setUsername("");
+    setPassword("");
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    clearForm();
+  };
+
   return (
-    <div className="login-form">
+    <form onSubmit={handleSubmit} className="login-form">
       <label>Username</label>
       <input
         type="text"
@@ -19,6 +29,8 @@ export default function LoginForm() {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       ></input>
-    </div>
+
+      <button type='submit' className='button'>Submit</button>
+    </form>
   );
 }

@@ -53,6 +53,8 @@ export default function RegisterForm() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                 ></input>
+
+                <button type='submit' className='button'>Submit</button>
             </form>
     )
 }
