@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 from starlette import status
 from utils.dynamodb import get_todos_table
 from boto3.dynamodb.conditions import Key
+from controllers import todoController
 
 router = APIRouter(
     prefix='/todos',
@@ -48,55 +49,23 @@ class UpdateTodoRequest(BaseModel):
 
 
 @router.get("/{username}", status_code=status.HTTP_200_OK)
-async def read_todos(username: str, table=Depends(get_todos_table)):
-    filtering_exp = Key('username').eq(username)
-    response = table.query(
-        KeyConditionExpression=filtering_exp)
-    return response.get("Items", [])
+async def read_all_todos(username: str, table=Depends(get_todos_table)):
+    return todoController.read_all_todos(username, table)
 
 @router.post("/create-todo", status_code=status.HTTP_201_CREATED)
 async def create_todo(todo_request: CreateTodoRequest, table=Depends(get_todos_table)):
-    item = todo_request.model_dump()
-    item['created_at'] = datetime.now(timezone.utc).isoformat()
-    table.put_item(Item = item)
-    return item
+    todoController.create_todo(todo_request, table)
     
 
 @router.put("/update-todo", status_code=status.HTTP_200_OK)
 async def update_todo(todo_request: UpdateTodoRequest, table=Depends(get_todos_table)):
-    to_set = {}
-    if todo_request.title is not None:
-        to_set['title'] = todo_request.title
-    if todo_request.description is not None:
-        to_set['description'] = todo_request.description
-    if todo_request.priority is not None:
-        to_set['priority'] = todo_request.priority
-    if todo_request.completed is not None:
-        to_set['completed'] = todo_request.completed
+    try:
+        response = todoController.update_todo(todo_request, table)
+        return response["Attributes"]
+    except todoController.EmptyUpdateRequest:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Failed to update the todo.")
 
-    if not to_set:
-        return {"message": "Nothing to update"}
-
-    update_expression = "SET " + ", ".join(f"#{key} = :{key}" for key in to_set)
-    expression_attr_names = {f"#{key}": key for key in to_set}
-    expression_attr_vals = {f":{key}": val for key, val in to_set.items()}
-
-    response = table.update_item(
-        Key={
-            "username": todo_request.username,
-            "created_at": todo_request.created_at
-            },
-        UpdateExpression=update_expression,
-        ExpressionAttributeNames=expression_attr_names,
-        ExpressionAttributeValues=expression_attr_vals,
-        ConditionExpression="attribute_exists(username) AND attribute_exists(created_at)",
-        ReturnValues="ALL_NEW",
-    )
-    return response["Attributes"]
     
 @router.delete("/{username}/{created_at}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_todo(username: str, created_at: str, table=Depends(get_todos_table)):
-    table.delete_item(
-        Key={"username": username, "created_at": created_at},
-        ConditionExpression="attribute_exists(username) AND attribute_exists(created_at)"
-    )
+    todoController.delete_todo(username, created_at, table)
