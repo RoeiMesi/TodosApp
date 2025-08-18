@@ -6,41 +6,36 @@ export default function todoReducer(state, action) {
       return {
         ...state,
         todos: state.todos.map((todo) =>
-          todo.dateCreated === action.payload.dateCreated
-            ? action.payload
-            : todo
+          todo.id === action.payload.id ? action.payload : todo
         ),
+        editingTodo:
+          state.editingTodo && state.editingTodo.id === action.payload.id
+            ? null
+            : state.editingTodo,
       };
+
     case "DELETE_TODO":
-      if (
-        state.editingTodo &&
-        state.editingTodo.dateCreated === action.payload.dateCreated
-      ) {
-        return {
-          ...state,
-          todos: state.todos.filter(
-            (todo) => todo.dateCreated !== action.payload.dateCreated
-          ),
-          editingTodo: null,
-        };
-      } else {
-        return {
-          ...state,
-          todos: state.todos.filter(
-            (todo) => todo.dateCreated !== action.payload.dateCreated
-          ),
-        };
-      }
+      return {
+        ...state,
+        todos: state.todos.filter((todo) => todo.id !== action.payload.id),
+        editingTodo:
+          state.editingTodo && state.editingTodo.id === action.payload.id
+            ? null
+            : state.editingTodo,
+      };
+
     case "SET_EDITING_TODO":
       return {
         ...state,
         editingTodo: action.payload,
       };
+
     case "CLEAR_EDITING_TODO":
       return {
         ...state,
         editingTodo: null,
       };
+      
     case "SET_SORTING":
       return {
         ...state,
