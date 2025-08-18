@@ -18,14 +18,16 @@ class Todo:
     priority: int
     completed: bool
     created_at: str #Sort key
+    id: str
 
-    def __init__(self, username, title, description, priority, completed):
+    def __init__(self, username, title, description, priority, completed, id):
         self.username = username
         self.title = title
         self.description = description
         self.priority = priority
         self.completed = completed
         self.created_at = datetime.now(timezone.utc).isoformat()
+        self.id = id
 
 class CreateTodoRequest(BaseModel):
     username: str = Field(description="Username of creator of the todo", default=None)
@@ -33,6 +35,7 @@ class CreateTodoRequest(BaseModel):
     description: str = Field(min_length=1)
     priority: int = Field(ge=1, le=3)
     completed: bool = Field(default=False)
+    id: str = Field(min_length=3)
 
 class UpdateTodoRequest(BaseModel):
     username: str
@@ -41,6 +44,7 @@ class UpdateTodoRequest(BaseModel):
     description: Optional[str] = None
     priority: Optional[int] = None
     completed: Optional[bool] = None
+    id: str = Field(min_length=3)
 
 
 @router.get("/{username}", status_code=status.HTTP_200_OK)
@@ -48,40 +52,51 @@ async def read_todos(username: str, table=Depends(get_todos_table)):
     filtering_exp = Key('username').eq(username)
     response = table.query(
         KeyConditionExpression=filtering_exp)
-    if not response["Items"]:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='No todos found')
-    return response["Items"]
+    return response["Items", []]
 
 @router.post("/create-todo", status_code=status.HTTP_201_CREATED)
 async def create_todo(todo_request: CreateTodoRequest, table=Depends(get_todos_table)):
-    todo_request_model = todo_request.model_dump()
-    todo_request_model['created_at'] = datetime.now(timezone.utc).isoformat()
-    response = table.put_item(Item = todo_request_model)
-    print("Todo created successfully")
-
+    item = todo_request.model_dump()
+    item['created_at'] = datetime.now(timezone.utc).isoformat()
+    table.put_item(Item = item)
+    return item
+    
 
 @router.put("/update-todo", status_code=status.HTTP_200_OK)
 async def update_todo(todo_request: UpdateTodoRequest, table=Depends(get_todos_table)):
-    title_val = "" if todo_request.title is None else todo_request.title
-    description_val = "" if todo_request.description is None else todo_request.description
-    priority_val = 0 if todo_request.priority is None else todo_request.priority
+    to_set = {}
+    if todo_request.title is not None:
+        to_set['title'] = todo_request.title
+    if todo_request.description is not None:
+        to_set['description'] = todo_request.description
+    if todo_request.priority is not None:
+        to_set['priority'] = todo_request.priority
+    if todo_request.completed is not None:
+        to_set['completed'] = todo_request.completed
+
+    if not to_set:
+        return {"message": "Nothing to update"}
+
+    update_expression = "SET " + ", ".join(f"#{key} = :{key}" for key in to_set)
+    expression_attr_names = {f"#{key}": key for key in to_set}
+    expression_attr_vals = {f":{key}": val for key, val in to_set.items()}
 
     response = table.update_item(
         Key={
             "username": todo_request.username,
             "created_at": todo_request.created_at
             },
-        UpdateExpression="SET title = :title, description = :desc, priority = :priority",
-        ExpressionAttributeValues={
-            ":title": title_val,
-            ":desc": description_val,
-            ":priority": priority_val,
-        },
+        UpdateExpression=update_expression,
+        ExpressionAttributeValues=expression_attr_names,
+        ExpressionAttributeValues=expression_attr_vals,
+        ConditionExpression="attribute_exists(username) AND attribute_exists(created_at)",
         ReturnValues="ALL_NEW",
     )
-
-    if "Attributes" not in response:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found")
-
     return response["Attributes"]
     
+@router.delete("/{username}/{created_at}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_todo(username: str, created_at: str, table=Depends(get_todos_table)):
+    table.delete_item(
+        Key={"username": username, "created_at": created_at},
+        ConditionExpression="attribute_exists(username) AND attribute exists(created_at)"
+    )
