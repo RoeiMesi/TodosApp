@@ -1,10 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-export default function TodoForm() {
+export default function TodoForm({ dispatch, editingTodo }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState(1);
-  const [completed, setCompleted] = useState(false);
+
+  useEffect(() => {
+    if (editingTodo) {
+      setTitle(editingTodo.title);
+      setDescription(editingTodo.description);
+      setPriority(editingTodo.priority);
+    } else {
+      clearForm();
+    }
+  }, [editingTodo]);
 
   const priorityLabels = {
     1: "Low",
@@ -15,12 +24,28 @@ export default function TodoForm() {
   const clearForm = () => {
     setTitle("");
     setDescription("");
-    setPriority("");
-    setCompleted("");
+    setPriority(1);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    clearForm();
+
+    const todoData = {
+      title,
+      description,
+      priority,
+      completed: editingTodo ? editingTodo.completed : false
+    };
+
+    dispatch({
+      type: editingTodo ? "UPDATE_TODO" : "ADD_TODO",
+      payload: todoData,
+    });
+  };
+
+  const handleCancel = () => {
+    dispatch({ type: "CLEAR_EDITING_TODO" });
     clearForm();
   };
 
@@ -50,7 +75,7 @@ export default function TodoForm() {
                 type="radio"
                 value={value}
                 checked={priority === value}
-                className='priority-input'
+                className="priority-input"
                 onChange={(e) => setPriority(e.target.value)}
               ></input>
               {label}
@@ -58,6 +83,15 @@ export default function TodoForm() {
           ))}
         </fieldset>
       </div>
+      <button type="submit" className="button">
+        Submit
+      </button>
+
+      {editingTodo && (
+        <button className="button" onClick={handleCancel}>
+          Cancel Edit
+        </button>
+      )}
     </form>
   );
 }

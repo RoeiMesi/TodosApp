@@ -3,7 +3,7 @@ import "./App.css";
 import "./styles.css";
 import TodoList from "./components/TodoList";
 import TodoForm from "./components/TodoForm";
-import MainPage from "./Pages/MainPage/MainPage";
+import TodoPage from "./Pages/TodoPage/TodoPage";
 import RegisterPage from "./Pages/RegisterPage/RegisterPage";
 import LoginPage from "./Pages/LoginPage/LoginPage";
 import { BrowserRouter, Router, Routes, Route, Link } from "react-router-dom";
@@ -21,7 +21,7 @@ function App() {
               <Link to='/login'>Login Page</Link>
             </li>
             <li>
-              <Link to='/'>Main Page</Link>
+              <Link to='/'>Todo Page</Link>
             </li>
           </ul>
         </nav>
@@ -31,7 +31,7 @@ function App() {
           </Route>
           <Route path="/login" element={<LoginPage />}>
           </Route>
-          <Route path="/" element={<MainPage />}>
+          <Route path="/" element={<TodoPage />}>
           </Route>
         </Routes>
       </BrowserRouter>
