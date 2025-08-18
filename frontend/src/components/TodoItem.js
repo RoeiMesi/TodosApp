@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 export default function TodoItem({ todo, dispatch }) {
-  const { title, description, priority, completed, dateCreated } = todo;
+  const { id, title, description, priority } = todo;
 
   const priorityClass = {
     1: "priority-low",
@@ -11,14 +11,14 @@ export default function TodoItem({ todo, dispatch }) {
 
   return (
     <div className="todo-item">
-      <div className={`priority-dot ${priorityClass[todo.priority]}`}></div>
+      <div className={`priority-dot ${priorityClass[Number(priority)]}`}></div>
       <h3>{title}</h3>
       <p>{description}</p>
 
       <button
         className="button"
         onClick={() =>
-          dispatch({ type: "DELETE_TODO", payload: { dateCreated } })
+          dispatch({ type: "DELETE_TODO", payload: { id } })
         }
       >
         Delete

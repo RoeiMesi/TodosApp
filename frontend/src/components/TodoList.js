@@ -4,9 +4,9 @@ import TodoItem from "./TodoItem";
 export default function TodoList({ todos, dispatch }) {
   return (
     <div className="todo-list">
-      {todos.map((todo) => (
+      {todos.map((todo, idx) => (
         <TodoItem
-          key={todo.createdAt}
+          key={todo.id ?? todo.dateCreated ?? idx}
           dispatch={dispatch}
           todo={todo}
         ></TodoItem>
