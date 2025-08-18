@@ -1,5 +1,7 @@
 export default function todoReducer(state, action) {
   switch (action.type) {
+    case "SET_TODOS":
+      return { ...state, todos: action.payload };
     case "ADD_TODO":
       return { ...state, todos: [...state.todos, action.payload] };
     case "UPDATE_TODO":

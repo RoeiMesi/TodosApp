@@ -2,10 +2,14 @@ from datetime import datetime, timezone
 from boto3.dynamodb.conditions import Key
 
 def delete_todo(username: str, created_at: str, todos_table):
-    todos_table.delete_item(
+    try:
+        todos_table.delete_item(
         Key={"username": username, "created_at": created_at},
         ConditionExpression="attribute_exists(username) AND attribute_exists(created_at)"
-    )
+        )
+        return True
+    except:
+        return None
 
 
 def read_all_todos(username: str, todos_table):
@@ -15,9 +19,12 @@ def read_all_todos(username: str, todos_table):
     return response.get("Items", [])
 
 def create_todo(todo, todos_table):
-    todo['created_at'] = datetime.now(timezone.utc).isoformat()
-    todos_table.put_item(Item = todo)
-    return todo
+    try:
+        todo['created_at'] = datetime.now(timezone.utc).isoformat()
+        todos_table.put_item(Item = todo)
+        return todo
+    except:
+        return None
 
 def update_todo(todo_request, todos_table):
     to_set = {}
@@ -31,7 +38,7 @@ def update_todo(todo_request, todos_table):
         to_set['completed'] = todo_request.completed
 
     if not to_set:
-        raise None
+        return None
 
     update_expression = "SET " + ", ".join(f"#{key} = :{key}" for key in to_set)
     expression_attr_names = {f"#{key}": key for key in to_set}
