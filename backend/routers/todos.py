@@ -40,11 +40,11 @@ class CreateTodoRequest(BaseModel):
 
 class UpdateTodoRequest(BaseModel):
     username: str
-    created_at: str
     title: Optional[str] = None
     description: Optional[str] = None
     priority: Optional[int] = None
     completed: Optional[bool] = None
+    created_at: str
     id: str = Field(min_length=3)
 
 
@@ -54,16 +54,19 @@ async def read_all_todos(username: str, table=Depends(get_todos_table)):
 
 @router.post("/create-todo", status_code=status.HTTP_201_CREATED)
 async def create_todo(todo_request: CreateTodoRequest, table=Depends(get_todos_table)):
-    todoController.create_todo(todo_request, table)
+    try:
+        response = todoController.create_todo(todo_request, table)
+        return {'message': 'success'}
+    except todoController.FailedTodoCreation:
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail='Failed to create todo.')
     
-
 @router.put("/update-todo", status_code=status.HTTP_200_OK)
 async def update_todo(todo_request: UpdateTodoRequest, table=Depends(get_todos_table)):
     try:
         response = todoController.update_todo(todo_request, table)
         return response["Attributes"]
     except todoController.EmptyUpdateRequest:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Failed to update the todo.")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Nothing to update")
 
     
 @router.delete("/{username}/{created_at}", status_code=status.HTTP_204_NO_CONTENT)

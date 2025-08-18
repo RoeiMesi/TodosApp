@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 export default function TodoItem({ todo, dispatch }) {
-  const { id, title, description, priority } = todo;
+  const { completed, created_at, priority, username, description, id, title } = todo;
 
   const priorityClass = {
     1: "priority-low",

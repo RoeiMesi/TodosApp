@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createTodo } from "../todosService";
 
 export default function TodoForm({ dispatch, editingTodo }) {
   const [title, setTitle] = useState("");
@@ -22,25 +23,31 @@ export default function TodoForm({ dispatch, editingTodo }) {
     setPriority("1");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const id = editingTodo?.id ?? (crypto?.randomUUID?.() || String(Date.now()));
 
     const todoData = {
+      username: "Roei",
       id,
       title,
       description,
       priority: Number(priority),
-      completed: editingTodo ? !!editingTodo.completed : false,
-      //TODO: Remove below because backend is creating this createDate time
-      ...(editingTodo?.date_created ? { date_created: editingTodo.date_created } : {})
+      completed: editingTodo ? !!editingTodo.completed : false
     };
 
-    dispatch({
-      type: editingTodo ? "UPDATE_TODO" : "ADD_TODO",
-      payload: todoData,
-    });
+    try {
+      const { status, data } = await createTodo(todoData);
+      if (status === 201) {
+        dispatch({
+          type: editingTodo ? "UPDATE_TODO" : "ADD_TODO",
+          payload: todoData,
+        });
+      }
+    } catch (error) {
+      console.error("Failed to create todo:", error);
+    }
 
     clearForm();
   };
