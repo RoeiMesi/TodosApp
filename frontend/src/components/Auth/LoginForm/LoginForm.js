@@ -31,7 +31,7 @@ export default function LoginForm() {
       const { status, data } = await login(userDetails);
       if (status === 200 && data.access_token) {
         localStorage.setItem("token", data.access_token);
-        window.location.href = "http://localhost:3000";
+        navigate('/');
         alert("You successfully logged in!");
       }
     } catch (error) {
@@ -52,12 +52,12 @@ export default function LoginForm() {
       ></input>
       <label>Password</label>
       <input
-        type="text"
+        type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       ></input>
 
-      <button type='submit' className='button'>Submit</button>
+      <button type='submit' className='button'>Login</button>
       <button type='button' className='button' onClick={handleRegisterClick}>Register</button>
     </form>
   );

@@ -5,6 +5,7 @@ import { sortTodos } from "../../utils/sortingUtilities";
 import todoReducer from "../../reducers/todoReducer";
 import { getTodos } from "../../services/todosService";
 import { getUsernameFromToken } from "../../services/authService";
+import { useNavigate } from "react-router-dom";
 
 export default function TodoPage() {
   const initialState = {
@@ -14,6 +15,8 @@ export default function TodoPage() {
   };
 
   const [state, dispatch] = useReducer(todoReducer, initialState);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const username = getUsernameFromToken();
@@ -31,7 +34,7 @@ export default function TodoPage() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    window.location.href = "http://localhost:3000";
+    navigate("");
     alert('Logged out successfully!');
   };
 
