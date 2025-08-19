@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { deleteTodo } from "../utils/todosService";
+import React from "react";
+import { deleteTodo, updateTodo } from "../utils/todosService";
 
 export default function TodoItem({ todo, dispatch }) {
   const { completed, created_at, priority, username, description, id, title } =
@@ -22,6 +22,26 @@ export default function TodoItem({ todo, dispatch }) {
     }
   };
 
+  const handleCompleteChange = async () => {
+    try {
+      dispatch({ type: "UPDATE_TODO", payload: { ...todo, completed: !completed } });
+
+      const { status, data } = await updateTodo({
+        username,
+        created_at,
+        id,
+        completed: !completed,
+      });
+
+      if (status === 200) {
+        dispatch({ type: "UPDATE_TODO", payload: data });
+      }
+    } catch (error) {
+      console.error("Failed to toggle completed", error);
+      dispatch({ type: "UPDATE_TODO", payload: { ...todo, completed } });
+    }
+  };
+
   return (
     <div className="todo-item">
       <div className={`priority-dot ${priorityClass[Number(priority)]}`}></div>
@@ -38,6 +58,7 @@ export default function TodoItem({ todo, dispatch }) {
       >
         Edit
       </button>
+      <button className={`complete-button ${completed ? "completed" : "not-completed"}`} onClick={handleCompleteChange}>{completed ? "Completed" : "Not completed"}</button>
     </div>
   );
 }

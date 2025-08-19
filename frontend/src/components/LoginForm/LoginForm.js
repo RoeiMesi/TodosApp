@@ -1,8 +1,16 @@
 import React, { useState } from "react";
 import "./LoginForm.css";
 import { login } from "../../utils/authService";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginForm() {
+
+  const navigate = useNavigate();
+
+  const handleRegisterClick = () => {
+    navigate('/register');
+  };
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -24,11 +32,13 @@ export default function LoginForm() {
       if (status === 200 && data.access_token) {
         localStorage.setItem("token", data.access_token);
         window.location.href = "http://localhost:3000";
+        alert("You successfully logged in!");
       }
     } catch (error) {
       console.error(error.response?.data?.detail || "Login failed");
+      alert("Wrong credentials.");
     }
-
+    
     clearForm();
   };
 
@@ -48,6 +58,7 @@ export default function LoginForm() {
       ></input>
 
       <button type='submit' className='button'>Submit</button>
+      <button type='button' className='button' onClick={handleRegisterClick}>Register</button>
     </form>
   );
 }
