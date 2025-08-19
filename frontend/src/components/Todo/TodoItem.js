@@ -1,5 +1,5 @@
 import React from "react";
-import { deleteTodo, updateTodo } from "../utils/todosService";
+import { deleteTodo, updateTodo } from "../../services/todosService";
 
 export default function TodoItem({ todo, dispatch }) {
   const { completed, created_at, priority, username, description, id, title } =

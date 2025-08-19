@@ -1,9 +1,9 @@
 
 import "./App.css";
 import "./styles.css";
-import TodoPage from "./Pages/TodoPage/TodoPage";
-import RegisterPage from "./Pages/RegisterPage/RegisterPage";
-import LoginPage from "./Pages/LoginPage/LoginPage";
+import TodoPage from "./Pages/Todo/TodoPage";
+import RegisterPage from "./Pages/Register/RegisterPage";
+import LoginPage from "./Pages/Login/LoginPage";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PrivateRoute from "./PrivateRoute";
 

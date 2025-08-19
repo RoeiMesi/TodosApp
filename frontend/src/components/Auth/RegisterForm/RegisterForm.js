@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./RegisterForm.css";
-import { register } from "../../utils/authService";
+import { register } from "../../../services/authService";
 import { useNavigate } from "react-router-dom";
 
 export default function RegisterForm() {
@@ -22,7 +22,6 @@ export default function RegisterForm() {
 
   const handleLoginClick = () => {
     navigate('/login');
-    alert('Moved to login page');
   };
 
   const handleRegister = async (e) => {
