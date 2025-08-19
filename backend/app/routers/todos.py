@@ -43,7 +43,7 @@ class UpdateTodoRequest(BaseModel):
     username: str
     title: Optional[str] = None
     description: Optional[str] = None
-    priority: Optional[int] = None
+    priority: Optional[int] = 1
     completed: Optional[bool] = None
     created_at: str
     id: str = Field(min_length=3)
@@ -65,15 +65,15 @@ async def create_todo(todo_request: CreateTodoRequest, table=Depends(get_todos_t
     except todoController.FailedTodoCreation:
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail='Failed to create todo.')
     
-@router.put("/update-todo", status_code=status.HTTP_200_OK)
-async def update_todo(todo_request: UpdateTodoRequest, table=Depends(get_todos_table), current_user=Depends(get_current_user)):
-    if current_user['username'] != todo_request.username:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Not allowed')
-    try:
-        response = todoController.update_todo(todo_request, table)
-        return response["Attributes"]
-    except todoController.EmptyUpdateRequest:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Nothing to update")
+# @router.put("/update-todo", status_code=status.HTTP_200_OK)
+# async def update_todo(todo_request: UpdateTodoRequest, table=Depends(get_todos_table), current_user=Depends(get_current_user)):
+#     if current_user['username'] != todo_request.username:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Not allowed')
+#     try:
+#         response = todoController.update_todo(todo_request, table)
+#         return response["Attributes"]
+#     except todoController.EmptyUpdateRequest:
+#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Nothing to update")
 
     
 @router.delete("/{username}/{created_at}", status_code=status.HTTP_204_NO_CONTENT)

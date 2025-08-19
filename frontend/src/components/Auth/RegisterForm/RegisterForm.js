@@ -43,8 +43,7 @@ export default function RegisterForm() {
     try {
       const { data, status } = await register(userData);
       if (status === 201) {
-        console.log(data.message);
-        alert(data.message);
+        alert("You registered successfully!");
       }
     } catch (error) {
       console.error(error.response?.data?.detail);
