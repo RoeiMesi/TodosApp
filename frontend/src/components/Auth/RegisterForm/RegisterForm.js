@@ -44,6 +44,7 @@ export default function RegisterForm() {
       const { data, status } = await register(userData);
       if (status === 201) {
         alert("You registered successfully!");
+        navigate('/login');
       }
     } catch (error) {
       console.error(error.response?.data?.detail);
@@ -86,7 +87,7 @@ export default function RegisterForm() {
       ></input>
 
       <button type="submit" className="button">
-        Submit
+        Register
       </button>
       <button type="button" className="button" onClick={handleLoginClick}>Login</button>
     </form>

@@ -2,7 +2,7 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 
 const api = axios.create({
-  baseURL: "http://localhost:8000",
+  baseURL: "https://h5ufuelq83.execute-api.il-central-1.amazonaws.com",
 });
 
 export const register = async (details) => {
