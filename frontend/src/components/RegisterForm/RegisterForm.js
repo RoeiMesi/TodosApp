@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./RegisterForm.css";
+import { register } from "../../utils/registerService";
 
 export default function RegisterForm() {
     const [username, setUsername] = useState('');
@@ -16,8 +17,26 @@ export default function RegisterForm() {
         setPassword('');
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        
+        const userData = {
+            username,
+            email,
+            firstname,
+            lastname,
+            password
+        };
+
+        try {
+            const { data, status } = await register(userData);
+            if (status === 201) {
+                console.log(data.message);
+            }
+        } catch (error) {
+            console.error(error.message);
+        }
         clearForm();
     }
 
@@ -31,7 +50,7 @@ export default function RegisterForm() {
                 ></input>
                 <label>E-mail</label>
                 <input
-                    type="text"
+                    type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                 ></input>
@@ -49,7 +68,7 @@ export default function RegisterForm() {
                 ></input>
                 <label>Password</label>
                 <input
-                    type="text"
+                    type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                 ></input>

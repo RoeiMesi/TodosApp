@@ -32,10 +32,12 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
 
 
-@router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+@router.post("/register", status_code=status.HTTP_201_CREATED)
 async def create_user(create_user_request: CreateUserRequest, users_table=Depends(get_users_table)):
     try:
-        return authController.create_user(create_user_request, users_table)
+        success = authController.create_user(create_user_request, users_table)
+        if success:
+            return {'message': 'Welcome! Your registration was successful.'}
     except authController.UserAlreadyExists:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exists")
     except Exception as ex:

@@ -22,7 +22,7 @@ def create_user(user_request: BaseModel, users_table):
 
     if created is None:
         raise UserAlreadyExists()
-    return created
+    return True
 
 def login(username: str, password: str, users_table):
     token = authService.login_for_access_token(username=username, password=password, users_table=users_table)
