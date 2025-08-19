@@ -4,6 +4,7 @@ import TodoList from "../../components/TodoList";
 import { sortTodos } from "../../utils/sortingUtilities";
 import todoReducer from "../../reducers/todoReducer";
 import { getTodos } from "../../utils/todosService";
+import { getUsernameFromToken } from "../../utils/authService";
 
 export default function TodoPage() {
   const initialState = {
@@ -11,13 +12,14 @@ export default function TodoPage() {
     editingTodo: null,
     sortPreference: "High to Low",
   };
-  
+
   const [state, dispatch] = useReducer(todoReducer, initialState);
-  
+
   useEffect(() => {
+    const username = getUsernameFromToken();
     (async () => {
       try {
-        const todos = await getTodos("Roei");
+        const todos = await getTodos(`${username}`);
         dispatch({ type: "SET_TODOS", payload: todos });
       } catch (error) {
         console.error("Failed to fetch todos:", error);
@@ -46,10 +48,7 @@ export default function TodoPage() {
             <option value="Low to High">Low to High</option>
           </select>
 
-          <TodoList
-          todos={sortedTodos}
-          dispatch={dispatch}
-          ></TodoList>
+          <TodoList todos={sortedTodos} dispatch={dispatch}></TodoList>
         </div>
       )}
     </div>

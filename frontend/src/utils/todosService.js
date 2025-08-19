@@ -4,24 +4,44 @@ const api = axios.create({
   baseURL: "http://localhost:8000",
 });
 
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    const status = err?.response?.status;
+    if (status === 401 || status === 403) {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    }
+    return Promise.reject(err);
+  }
+);
+
 const getTodos = async (username) => {
-    const { data } = await api.get(`/todos/${encodeURIComponent(username)}`);
-    return data;
-}
+  const { data } = await api.get(`/todos/${encodeURIComponent(username)}`);
+  return data;
+};
 
 const createTodo = async (todo) => {
-    const { data, status } = await api.post(`/todos/create-todo`, todo)
-    return { data, status };
-}
+  const { data, status } = await api.post(`/todos/create-todo`, todo);
+  return { data, status };
+};
 
 const deleteTodo = async (username, createdAt) => {
-    const { status } = await api.delete(`/todos/${encodeURIComponent(username)}/${encodeURIComponent(createdAt)}`);
-    return status; // Should be 204 for success
-}
+  const { status } = await api.delete(
+    `/todos/${encodeURIComponent(username)}/${encodeURIComponent(createdAt)}`
+  );
+  return status; // Should be 204 for success
+};
 
-const updateTodo = async(todo) => {
-    const { status, data } = await api.put('/todos/update-todo', todo);
-    return { status, data };
-}
+const updateTodo = async (todo) => {
+  const { status, data } = await api.put("/todos/update-todo", todo);
+  return { status, data };
+};
 
-export { getTodos, createTodo, deleteTodo, updateTodo }
+export { getTodos, createTodo, deleteTodo, updateTodo };

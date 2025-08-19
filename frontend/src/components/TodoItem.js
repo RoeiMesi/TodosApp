@@ -28,12 +28,7 @@ export default function TodoItem({ todo, dispatch }) {
       <h3>{title}</h3>
       <p>{description}</p>
 
-      <button
-        className="button"
-        onClick={
-          handleDelete
-        }
-      >
+      <button className="button" onClick={handleDelete}>
         Delete
       </button>
 
