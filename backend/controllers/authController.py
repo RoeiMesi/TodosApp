@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from services import authService
 from fastapi.security import OAuth2PasswordBearer
+from jose import jwt, JWTError
 
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl='auth/token')
 
