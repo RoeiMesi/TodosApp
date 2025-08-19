@@ -6,6 +6,7 @@ from starlette import status
 from utils.dynamodb import get_todos_table
 from boto3.dynamodb.conditions import Key
 from controllers import todoController
+from services.authService import get_current_user
 
 router = APIRouter(
     prefix='/todos',
@@ -49,11 +50,15 @@ class UpdateTodoRequest(BaseModel):
 
 
 @router.get("/{username}", status_code=status.HTTP_200_OK)
-async def read_all_todos(username: str, table=Depends(get_todos_table)):
+async def read_all_todos(username: str, table=Depends(get_todos_table), current_user=Depends(get_current_user)):
+    if current_user['username'] != username:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Not allowed')
     return todoController.read_all_todos(username, table)
 
 @router.post("/create-todo", status_code=status.HTTP_201_CREATED)
-async def create_todo(todo_request: CreateTodoRequest, table=Depends(get_todos_table)):
+async def create_todo(todo_request: CreateTodoRequest, table=Depends(get_todos_table), current_user=Depends(get_current_user)):
+    if current_user['username'] != todo_request.username:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Not allowed')
     try:
         response = todoController.create_todo(todo_request, table)
         return response
@@ -61,7 +66,9 @@ async def create_todo(todo_request: CreateTodoRequest, table=Depends(get_todos_t
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail='Failed to create todo.')
     
 @router.put("/update-todo", status_code=status.HTTP_200_OK)
-async def update_todo(todo_request: UpdateTodoRequest, table=Depends(get_todos_table)):
+async def update_todo(todo_request: UpdateTodoRequest, table=Depends(get_todos_table), current_user=Depends(get_current_user)):
+    if current_user['username'] != todo_request.username:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Not allowed')
     try:
         response = todoController.update_todo(todo_request, table)
         return response["Attributes"]
@@ -70,7 +77,9 @@ async def update_todo(todo_request: UpdateTodoRequest, table=Depends(get_todos_t
 
     
 @router.delete("/{username}/{created_at}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_todo(username: str, created_at: str, table=Depends(get_todos_table)):
+async def delete_todo(username: str, created_at: str, table=Depends(get_todos_table), current_user=Depends(get_current_user)):
+    if current_user['username'] != username:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Not allowed')
     try:
         todoController.delete_todo(username, created_at, table)
     except todoController.FailedDelete:
