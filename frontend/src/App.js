@@ -1,12 +1,10 @@
-import logo from "./logo.svg";
+
 import "./App.css";
 import "./styles.css";
-import TodoList from "./components/TodoList";
-import TodoForm from "./components/TodoForm";
 import TodoPage from "./Pages/TodoPage/TodoPage";
 import RegisterPage from "./Pages/RegisterPage/RegisterPage";
 import LoginPage from "./Pages/LoginPage/LoginPage";
-import { BrowserRouter, Router, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PrivateRoute from "./PrivateRoute";
 
 function App() {

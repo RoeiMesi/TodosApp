@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect, useRef } from "react";
+import React, { useReducer, useEffect } from "react";
 import TodoForm from "../../components/TodoForm";
 import TodoList from "../../components/TodoList";
 import { sortTodos } from "../../utils/sortingUtilities";
@@ -29,8 +29,17 @@ export default function TodoPage() {
 
   const sortedTodos = sortTodos(state.todos, state.sortPreference);
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "http://localhost:3000";
+    alert('Logged out successfully!');
+  };
+
   return (
     <div className="container">
+      <button className="logout-button" onClick={handleLogout}>
+        Logout
+      </button>
       <h1>Create Todo</h1>
       <TodoForm dispatch={dispatch} editingTodo={state.editingTodo}></TodoForm>
 
