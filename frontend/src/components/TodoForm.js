@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { createTodo } from "../todosService";
+import { createTodo, updateTodo } from "../utils/todosService";
 
 export default function TodoForm({ dispatch, editingTodo }) {
   const [title, setTitle] = useState("");
@@ -16,7 +16,6 @@ export default function TodoForm({ dispatch, editingTodo }) {
     }
   }, [editingTodo]);
 
-
   const clearForm = () => {
     setTitle("");
     setDescription("");
@@ -26,27 +25,45 @@ export default function TodoForm({ dispatch, editingTodo }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const id = editingTodo?.id ?? (crypto?.randomUUID?.() || String(Date.now()));
+    const id =
+      editingTodo?.id ?? (crypto?.randomUUID?.() || String(Date.now()));
 
-    const todoData = {
+    const baseData = {
       username: "Roei",
       id,
       title,
       description,
       priority: Number(priority),
-      completed: editingTodo ? !!editingTodo.completed : false
+      completed: editingTodo ? !!editingTodo.completed : false,
     };
 
     try {
-      const { status, data } = await createTodo(todoData);
-      if (status === 201) {
-        dispatch({
-          type: editingTodo ? "UPDATE_TODO" : "ADD_TODO",
-          payload: todoData,
-        });
+      if (editingTodo) {
+        const payload = {
+          ...baseData,
+          username: editingTodo.username,
+          created_at: editingTodo.created_at,
+        };
+
+        const { status, data } = await updateTodo(payload);
+        if (status === 200) {
+          dispatch({
+            type: editingTodo ? "UPDATE_TODO" : "ADD_TODO",
+            payload: data,
+          });
+        }
+      } else {
+        const todoData = {
+          ...baseData,
+          username: "Roei",
+        };
+        const { status, data } = await createTodo(todoData);
+        if (status === 201) {
+          dispatch({ type: "ADD_TODO", payload: data });
+        }
       }
     } catch (error) {
-      console.error("Failed to create todo:", error);
+      console.error("Failed to submit todo:", error);
     }
 
     clearForm();

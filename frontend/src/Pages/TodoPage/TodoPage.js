@@ -3,7 +3,7 @@ import TodoForm from "../../components/TodoForm";
 import TodoList from "../../components/TodoList";
 import { sortTodos } from "../../utils/sortingUtilities";
 import todoReducer from "../../reducers/todoReducer";
-import { getTodos } from "../../todosService";
+import { getTodos } from "../../utils/todosService";
 
 export default function TodoPage() {
   const initialState = {
@@ -15,9 +15,6 @@ export default function TodoPage() {
   const [state, dispatch] = useReducer(todoReducer, initialState);
   
   useEffect(() => {
-    // if (hasFetchedRef.current) return;
-    // hasFetchedRef.current = true;
-
     (async () => {
       try {
         const todos = await getTodos("Roei");
