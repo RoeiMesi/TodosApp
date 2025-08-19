@@ -1,10 +1,10 @@
 import React, { useReducer, useEffect } from "react";
-import TodoForm from "../../components/TodoForm";
-import TodoList from "../../components/TodoList";
+import TodoForm from "../../components/Todo/TodoForm";
+import TodoList from "../../components/Todo/TodoList";
 import { sortTodos } from "../../utils/sortingUtilities";
 import todoReducer from "../../reducers/todoReducer";
-import { getTodos } from "../../utils/todosService";
-import { getUsernameFromToken } from "../../utils/authService";
+import { getTodos } from "../../services/todosService";
+import { getUsernameFromToken } from "../../services/authService";
 
 export default function TodoPage() {
   const initialState = {

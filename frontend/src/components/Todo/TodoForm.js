@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { createTodo, updateTodo } from "../utils/todosService";
-import { getUsernameFromToken } from "../utils/authService";
+import { createTodo, updateTodo } from "../../services/todosService";
+import { getUsernameFromToken } from "../../services/authService";
 
 export default function TodoForm({ dispatch, editingTodo }) {
   const [title, setTitle] = useState("");
