@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { createTodo, updateTodo } from "../utils/todosService";
+import { getUsernameFromToken } from "../utils/authService";
 
 export default function TodoForm({ dispatch, editingTodo }) {
   const [title, setTitle] = useState("");
@@ -25,11 +26,13 @@ export default function TodoForm({ dispatch, editingTodo }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const username = getUsernameFromToken();
+
     const id =
       editingTodo?.id ?? (crypto?.randomUUID?.() || String(Date.now()));
 
     const baseData = {
-      username: "Roei",
+      username,
       id,
       title,
       description,
@@ -55,7 +58,7 @@ export default function TodoForm({ dispatch, editingTodo }) {
       } else {
         const todoData = {
           ...baseData,
-          username: "Roei",
+          username,
         };
         const { status, data } = await createTodo(todoData);
         if (status === 201) {

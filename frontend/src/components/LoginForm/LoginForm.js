@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./LoginForm.css";
+import { login } from "../../utils/authService";
 
 export default function LoginForm() {
   const [username, setUsername] = useState("");
@@ -10,13 +11,29 @@ export default function LoginForm() {
     setPassword("");
   };
 
-  const handleSubmit = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+
+    const userDetails = {
+      username,
+      password
+    };
+
+    try {
+      const { status, data } = await login(userDetails);
+      if (status === 200 && data.access_token) {
+        localStorage.setItem("token", data.access_token);
+        window.location.href = "http://localhost:3000";
+      }
+    } catch (error) {
+      console.error(error.response?.data?.detail || "Login failed");
+    }
+
     clearForm();
   };
 
   return (
-    <form onSubmit={handleSubmit} className="login-form">
+    <form onSubmit={handleLogin} className="login-form">
       <label>Username</label>
       <input
         type="text"

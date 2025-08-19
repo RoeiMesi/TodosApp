@@ -37,7 +37,7 @@ export default function todoReducer(state, action) {
         ...state,
         editingTodo: null,
       };
-      
+
     case "SET_SORTING":
       return {
         ...state,
